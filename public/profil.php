@@ -1,5 +1,5 @@
 <?php
-// public/profil.php - Logika Detail Anggota
+// public/profil.php - Logika Detail Anggota & Profiling Holistik
 session_start();
 
 require_once '../config/database.php';
@@ -56,7 +56,60 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['action'])) {
         }
     }
     
-    // Action Tambah Organisasi (Tab 6 - DSS Oriented)
+    // Action Tambah Profiling & Survei Holistik (Tab 5)
+    if ($_POST['action'] == 'tambah_profiling') {
+        $tgl_survei = $_POST['tgl_survei'];
+        $nama_petugas = htmlspecialchars(trim($_POST['nama_petugas']));
+        
+        $kondisi_rumah_aset = htmlspecialchars(trim($_POST['kondisi_rumah_aset']));
+        $kondisi_kesehatan = htmlspecialchars(trim($_POST['kondisi_kesehatan']));
+        $catatan_usaha_pertanian = htmlspecialchars(trim($_POST['catatan_usaha_pertanian']));
+        $rencana_peningkatan_income = htmlspecialchars(trim($_POST['rencana_peningkatan_income']));
+        
+        // Membersihkan format mata uang (titik dan Rp) agar bisa masuk ke Double/Float
+        $k_masuk = !empty($_POST['kas_keluarga_masuk']) ? (float)str_replace(['Rp', '.', ' '], '', $_POST['kas_keluarga_masuk']) : 0;
+        $k_keluar = !empty($_POST['kas_keluarga_keluar']) ? (float)str_replace(['Rp', '.', ' '], '', $_POST['kas_keluarga_keluar']) : 0;
+        $u_masuk = !empty($_POST['kas_usaha_masuk']) ? (float)str_replace(['Rp', '.', ' '], '', $_POST['kas_usaha_masuk']) : 0;
+        $u_keluar = !empty($_POST['kas_usaha_keluar']) ? (float)str_replace(['Rp', '.', ' '], '', $_POST['kas_usaha_keluar']) : 0;
+        
+        $a_keluarga = !empty($_POST['aset_keluarga']) ? (float)str_replace(['Rp', '.', ' '], '', $_POST['aset_keluarga']) : 0;
+        $h_keluarga = !empty($_POST['hutang_keluarga']) ? (float)str_replace(['Rp', '.', ' '], '', $_POST['hutang_keluarga']) : 0;
+        $a_usaha = !empty($_POST['aset_usaha']) ? (float)str_replace(['Rp', '.', ' '], '', $_POST['aset_usaha']) : 0;
+        $h_usaha = !empty($_POST['hutang_usaha']) ? (float)str_replace(['Rp', '.', ' '], '', $_POST['hutang_usaha']) : 0;
+
+        $rencana_keluarga = htmlspecialchars(trim($_POST['rencana_keluarga']));
+        $harapan_mendesak = htmlspecialchars(trim($_POST['harapan_mendesak']));
+        $keharmonisan_keluarga = htmlspecialchars(trim($_POST['keharmonisan_keluarga']));
+        $relasi_sosial_warga = htmlspecialchars(trim($_POST['relasi_sosial_warga']));
+        $relasi_ke_cu = htmlspecialchars(trim($_POST['relasi_ke_cu']));
+        $rekomendasi_petugas = htmlspecialchars(trim($_POST['rekomendasi_petugas']));
+
+        try {
+            $stmt_prof = $pdo_lokal->prepare("
+                INSERT INTO t_profiling_keluarga (
+                    no_ba, tgl_survei, nama_petugas, kondisi_rumah_aset, kondisi_kesehatan, 
+                    catatan_usaha_pertanian, rencana_peningkatan_income, 
+                    kas_keluarga_masuk, kas_keluarga_keluar, kas_usaha_masuk, kas_usaha_keluar,
+                    aset_keluarga, hutang_keluarga, aset_usaha, hutang_usaha,
+                    rencana_keluarga, harapan_mendesak, keharmonisan_keluarga, relasi_sosial_warga, 
+                    relasi_ke_cu, rekomendasi_petugas
+                ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+            ");
+            $stmt_prof->execute([
+                $no_ba, $tgl_survei, $nama_petugas, $kondisi_rumah_aset, $kondisi_kesehatan,
+                $catatan_usaha_pertanian, $rencana_peningkatan_income,
+                $k_masuk, $k_keluar, $u_masuk, $u_keluar,
+                $a_keluarga, $h_keluarga, $a_usaha, $h_usaha,
+                $rencana_keluarga, $harapan_mendesak, $keharmonisan_keluarga, $relasi_sosial_warga,
+                $relasi_ke_cu, $rekomendasi_petugas
+            ]);
+            $success_msg = "Laporan Survei & Kunjungan Holistik berhasil direkam!";
+        } catch (PDOException $e) {
+            $error_msg = "Gagal menyimpan laporan kunjungan: " . htmlspecialchars($e->getMessage());
+        }
+    }
+
+    // Action Tambah Organisasi (Tab 6)
     if ($_POST['action'] == 'tambah_organisasi') {
         $nama_org = htmlspecialchars(trim($_POST['nama_organisasi']));
         $id_kategori = (int) $_POST['id_kategori'];
@@ -101,7 +154,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['action'])) {
         }
     }
 
-    // Action Tambah Diklat CU (Tab 7 - DSS Oriented)
+    // Action Tambah Diklat CU (Tab 7)
     if ($_POST['action'] == 'tambah_diklat') {
         $id_diklat = (int) $_POST['id_diklat'];
         $tanggal_pelaksanaan = $_POST['tanggal_pelaksanaan'];
@@ -397,7 +450,21 @@ try {
 } catch (PDOException $e) {}
 
 // ==============================================================================
-// 8. DATA-READY DSS PORTOFOLIO ORGANISASI (TAB 6)
+// 8. TARIK DATA PROFILING HOLISTIK / KUNJUNGAN (TAB 5)
+// ==============================================================================
+$data_profiling = [];
+try {
+    $stmt_prof_get = $pdo_lokal->prepare("
+        SELECT * FROM t_profiling_keluarga 
+        WHERE no_ba = ? 
+        ORDER BY tgl_survei DESC
+    ");
+    $stmt_prof_get->execute([$no_ba]);
+    $data_profiling = $stmt_prof_get->fetchAll(PDO::FETCH_ASSOC);
+} catch (PDOException $e) {}
+
+// ==============================================================================
+// 9. DATA-READY DSS PORTOFOLIO ORGANISASI (TAB 6)
 // ==============================================================================
 $master_kategori = [];
 $master_jabatan = [];
@@ -446,7 +513,7 @@ try {
 }
 
 // ==============================================================================
-// 9. DATA-READY DSS PENDIDIKAN / DIKLAT CU (TAB 7)
+// 10. DATA-READY DSS PENDIDIKAN / DIKLAT CU (TAB 7)
 // ==============================================================================
 $master_diklat = [];
 $data_diklat = [];
