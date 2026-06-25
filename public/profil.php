@@ -1,5 +1,5 @@
 <?php
-// public/profil.php - Logika Detail Anggota & Profiling Holistik
+// public/profil.php - Logika Detail Anggota & DMS
 session_start();
 
 require_once '../config/database.php';
@@ -66,7 +66,6 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['action'])) {
         $catatan_usaha_pertanian = htmlspecialchars(trim($_POST['catatan_usaha_pertanian']));
         $rencana_peningkatan_income = htmlspecialchars(trim($_POST['rencana_peningkatan_income']));
         
-        // Membersihkan format mata uang (titik dan Rp) agar bisa masuk ke Double/Float
         $k_masuk = !empty($_POST['kas_keluarga_masuk']) ? (float)str_replace(['Rp', '.', ' '], '', $_POST['kas_keluarga_masuk']) : 0;
         $k_keluar = !empty($_POST['kas_keluarga_keluar']) ? (float)str_replace(['Rp', '.', ' '], '', $_POST['kas_keluarga_keluar']) : 0;
         $u_masuk = !empty($_POST['kas_usaha_masuk']) ? (float)str_replace(['Rp', '.', ' '], '', $_POST['kas_usaha_masuk']) : 0;
@@ -130,9 +129,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['action'])) {
                 $file_sk_name = "sk_" . $no_ba . "_" . time() . "." . $ext;
                 $target_path = "../public/uploads/sk/" . $file_sk_name;
                 
-                if (!is_dir("../public/uploads/sk/")) { 
-                    mkdir("../public/uploads/sk/", 0777, true); 
-                }
+                if (!is_dir("../public/uploads/sk/")) { mkdir("../public/uploads/sk/", 0777, true); }
                 move_uploaded_file($file_tmp, $target_path);
             }
         }
@@ -171,9 +168,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['action'])) {
                 $file_sertifikat_name = "sertifikat_" . $no_ba . "_" . time() . "." . $ext;
                 $target_path = "../public/uploads/sertifikat/" . $file_sertifikat_name;
                 
-                if (!is_dir("../public/uploads/sertifikat/")) { 
-                    mkdir("../public/uploads/sertifikat/", 0777, true); 
-                }
+                if (!is_dir("../public/uploads/sertifikat/")) { mkdir("../public/uploads/sertifikat/", 0777, true); }
                 move_uploaded_file($file_tmp, $target_path);
             }
         }
@@ -190,6 +185,49 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['action'])) {
             $success_msg = "Riwayat Pendidikan/Diklat CU berhasil ditambahkan!";
         } catch (PDOException $e) {
             $error_msg = "Gagal menambah data diklat: " . htmlspecialchars($e->getMessage());
+        }
+    }
+
+    // Action Tambah Dokumen DMS (Tab 8)
+    if ($_POST['action'] == 'tambah_dokumen') {
+        $kategori_dokumen = htmlspecialchars(trim($_POST['kategori_dokumen']));
+        $keterangan = htmlspecialchars(trim($_POST['keterangan']));
+        
+        $nama_file_doc = null;
+        if (isset($_FILES['file_dokumen']) && $_FILES['file_dokumen']['error'] === UPLOAD_ERR_OK) {
+            $file_tmp = $_FILES['file_dokumen']['tmp_name'];
+            $file_orig = $_FILES['file_dokumen']['name'];
+            $ext = pathinfo($file_orig, PATHINFO_EXTENSION);
+            
+            // Ekstensi yang diizinkan untuk arsip digital
+            $allowed_ext = ['pdf', 'jpg', 'jpeg', 'png'];
+            if (in_array(strtolower($ext), $allowed_ext)) {
+                $nama_file_doc = "doc_" . $no_ba . "_" . time() . "." . $ext;
+                $target_path = "../public/uploads/dokumen/" . $nama_file_doc;
+                
+                if (!is_dir("../public/uploads/dokumen/")) { 
+                    mkdir("../public/uploads/dokumen/", 0777, true); 
+                }
+                
+                if (move_uploaded_file($file_tmp, $target_path)) {
+                    try {
+                        $stmt_doc = $pdo_lokal->prepare("
+                            INSERT INTO t_dokumen_anggota (no_ba, kategori_dokumen, nama_file, keterangan) 
+                            VALUES (?, ?, ?, ?)
+                        ");
+                        $stmt_doc->execute([$no_ba, $kategori_dokumen, $nama_file_doc, $keterangan]);
+                        $success_msg = "Dokumen/Arsip digital berhasil diunggah ke sistem!";
+                    } catch (PDOException $e) {
+                        $error_msg = "Gagal menyimpan data dokumen: " . htmlspecialchars($e->getMessage());
+                    }
+                } else {
+                    $error_msg = "Gagal memindahkan file yang diunggah.";
+                }
+            } else {
+                $error_msg = "Format file tidak didukung. Harap gunakan PDF, JPG, atau PNG.";
+            }
+        } else {
+            $error_msg = "Tidak ada file yang dipilih atau terjadi kesalahan unggah.";
         }
     }
 }
@@ -508,9 +546,7 @@ try {
     elseif ($skor_potensi >= 20) { $status_potensi = "Potensial"; $warna_potensi = "primary"; }
     elseif ($skor_potensi > 0) { $status_potensi = "Kaderisasi Awal"; $warna_potensi = "warning"; }
 
-} catch (PDOException $e) {
-    $error_msg = "Sistem gagal memuat DSS Organisasi: " . htmlspecialchars($e->getMessage());
-}
+} catch (PDOException $e) {}
 
 // ==============================================================================
 // 10. DATA-READY DSS PENDIDIKAN / DIKLAT CU (TAB 7)
@@ -550,9 +586,21 @@ try {
         $warna_diklat = "success";
     }
 
-} catch (PDOException $e) {
-    $error_msg = "Sistem gagal memuat DSS Pendidikan/Diklat: " . htmlspecialchars($e->getMessage());
-}
+} catch (PDOException $e) {}
+
+// ==============================================================================
+// 11. TARIK DATA DOKUMEN / DMS (TAB 8)
+// ==============================================================================
+$data_dokumen = [];
+try {
+    $stmt_doc_get = $pdo_lokal->prepare("
+        SELECT * FROM t_dokumen_anggota 
+        WHERE no_ba = ? 
+        ORDER BY tgl_upload DESC
+    ");
+    $stmt_doc_get->execute([$no_ba]);
+    $data_dokumen = $stmt_doc_get->fetchAll(PDO::FETCH_ASSOC);
+} catch (PDOException $e) {}
 
 // Konfigurasi Halaman
 $page_title = "Profil " . htmlspecialchars($data_core['Nama']);

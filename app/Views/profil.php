@@ -1,8 +1,6 @@
-<!-- app/Views/profil.php -->
 <?php require_once '../app/Views/Layouts/header.php'; ?>
 <?php require_once '../app/Views/Layouts/sidebar.php'; ?>
 
-<!-- Area Konten Utama -->
 <main class="main-content p-3 p-md-4">
     
     <?php if ($success_msg): ?>
@@ -17,7 +15,6 @@
     <?php endif; ?>
 
     <?php if ($data_core): ?>
-    <!-- Header Profil -->
     <div class="card shadow-sm border-0 mb-3">
         <div class="card-body d-flex align-items-center">
             <div class="flex-shrink-0 position-relative">
@@ -42,7 +39,6 @@
         </div>
     </div>
 
-    <!-- Sistem 7 Tab -->
     <div class="card shadow-sm border-0 mb-4">
         <div class="card-header bg-white p-0 border-bottom">
             <ul class="nav nav-tabs px-3 pt-2" id="profilTabs" role="tablist">
@@ -53,15 +49,13 @@
                 <li class="nav-item"><button class="nav-link" data-bs-toggle="tab" data-bs-target="#tab-kunjungan" type="button">5. Survei/Kunjungan</button></li>
                 <li class="nav-item"><button class="nav-link" data-bs-toggle="tab" data-bs-target="#tab-organisasi" type="button">6. Organisasi</button></li>
                 <li class="nav-item"><button class="nav-link" data-bs-toggle="tab" data-bs-target="#tab-diklat" type="button">7. Diklat CU</button></li>
+                <li class="nav-item"><button class="nav-link fw-bold text-primary" data-bs-toggle="tab" data-bs-target="#tab-dokumen" type="button">8. Arsip Digital</button></li>
             </ul>
         </div>
         
         <div class="card-body">
             <div class="tab-content">
                 
-                <!-- ========================================================= -->
-                <!-- TAB 1: PRIBADI -->
-                <!-- ========================================================= -->
                 <div class="tab-pane fade show active" id="tab-pribadi" role="tabpanel">
                     <h6 class="fw-bold mb-3 text-primary border-bottom pb-2"><i class="bi bi-person-badge"></i> Identitas & Demografi</h6>
                     <div class="row mb-4">
@@ -166,9 +160,6 @@
                     </div>
                 </div>
 
-                <!-- ========================================================= -->
-                <!-- TAB 2: PEKERJAAN -->
-                <!-- ========================================================= -->
                 <div class="tab-pane fade" id="tab-pekerjaan" role="tabpanel">
                     <h6 class="fw-bold mb-3 text-primary border-bottom pb-2"><i class="bi bi-briefcase-fill"></i> Data Pekerjaan & Arus Kas</h6>
                     <div class="alert alert-light border small text-muted mb-4">
@@ -256,9 +247,6 @@
                     </div>
                 </div>
 
-                <!-- ========================================================= -->
-                <!-- TAB 3: PORTOFOLIO KEUANGAN -->
-                <!-- ========================================================= -->
                 <div class="tab-pane fade" id="tab-portofolio" role="tabpanel">
                     
                     <div class="d-flex flex-wrap justify-content-between align-items-end mb-4 pb-2 border-bottom">
@@ -288,10 +276,8 @@
                     </div>
 
                     <div class="tab-content" id="pills-tabContent-porto">
-                        <!-- KELOMPOK 1: SIMPANAN & INVESTASI -->
                         <div class="tab-pane fade show active" id="pills-simpanan" role="tabpanel">
                             
-                            <!-- SEGMENTASI A -->
                             <div class="mb-2 px-1 text-primary small fw-bold text-uppercase"><i class="bi bi-shield-lock-fill me-1"></i> A. Ekuitas / Simpanan Keanggotaan</div>
                             <div class="accordion mb-4" id="accKeanggotaan">
                                 <div class="accordion-item porto-item status-<?= $data_core['Status_Keanggotaan'] == '0' ? 'aktif' : 'tutup' ?> border-primary mb-3 shadow-sm" style="border-radius: 8px; overflow: hidden;">
@@ -351,7 +337,6 @@
                                 </div>
                             </div>
 
-                            <!-- SEGMENTASI B -->
                             <div class="mb-2 px-1 text-secondary small fw-bold text-uppercase mt-4"><i class="bi bi-wallet2 me-1"></i> B. Simpanan Harian (Liquid/Murni)</div>
                             <div class="accordion mb-4" id="accHarian">
                                 <?php if (!empty($pure_simpanan_harian)): ?>
@@ -423,7 +408,6 @@
                                 <?php endif; ?>
                             </div>
 
-                            <!-- SEGMENTASI C -->
                             <div class="mb-2 px-1 text-warning small fw-bold text-uppercase mt-4"><i class="bi bi-award-fill me-1"></i> C. Simpanan Berjangka / Investasi</div>
                             <div class="accordion mb-4" id="accBerjangka">
                                 <?php if (!empty($data_simpanan_berjangka)): ?>
@@ -516,7 +500,6 @@
                             </div>
                         </div>
 
-                        <!-- KELOMPOK 2: FASILITAS PINJAMAN -->
                         <div class="tab-pane fade" id="pills-pinjaman" role="tabpanel">
                             <div class="accordion mb-4" id="accordionPinjaman">
                                 <?php if (!empty($data_pinjaman)): ?>
@@ -600,9 +583,6 @@
                     </div>
                 </div>
 
-                <!-- ========================================================= -->
-                <!-- TAB 4: KELUARGA (ANGGOTA & PROSPEK LOKAL) -->
-                <!-- ========================================================= -->
                 <div class="tab-pane fade" id="tab-keluarga" role="tabpanel">
                     <div class="d-flex justify-content-between align-items-center mb-3 border-bottom pb-2">
                         <h6 class="fw-bold mb-0 text-primary"><i class="bi bi-diagram-3-fill"></i> Jaringan Keluarga & Prospek</h6>
@@ -611,7 +591,6 @@
                         </button>
                     </div>
 
-                    <!-- BAGIAN A: Keluarga Inti (Dari Core berdasarkan No. KK) -->
                     <div class="mb-2 px-1 text-success small fw-bold text-uppercase mt-3"><i class="bi bi-person-check-fill me-1"></i> A. Keluarga (Anggota Koperasi Aktif)</div>
                     <div class="card shadow-sm border-0 mb-4">
                         <div class="table-responsive">
@@ -651,7 +630,6 @@
                         </div>
                     </div>
 
-                    <!-- BAGIAN B: Database Prospek (Input Lokal) -->
                     <div class="mb-2 px-1 text-warning small fw-bold text-uppercase mt-4"><i class="bi bi-person-lines-fill me-1"></i> B. Database Prospek Keluarga (Input Lokal)</div>
                     <div class="card shadow-sm border-0">
                         <div class="table-responsive">
@@ -703,9 +681,6 @@
                     </div>
                 </div>
 
-                <!-- ========================================================= -->
-                <!-- TAB 5: KUNJUNGAN / SURVEI HOLISTIK -->
-                <!-- ========================================================= -->
                 <div class="tab-pane fade" id="tab-kunjungan" role="tabpanel">
                     <div class="d-flex justify-content-between align-items-center mb-4 border-bottom pb-2">
                         <div>
@@ -739,7 +714,6 @@
                             </div>
                             <div class="card-body p-4">
                                 
-                                <!-- 1. Neraca / Posisi Keuangan -->
                                 <h6 class="fw-bold text-primary mb-3"><i class="bi bi-bank2 me-1"></i> APBK / Posisi Neraca (Harta vs Kewajiban)</h6>
                                 <div class="row g-3 mb-4">
                                     <div class="col-md-6">
@@ -766,7 +740,6 @@
                                     </div>
                                 </div>
 
-                                <!-- 2. Arus Kas Bulanan -->
                                 <h6 class="fw-bold text-primary mb-3 mt-4"><i class="bi bi-arrow-left-right me-1"></i> Estimasi Arus Kas Bulanan (Cashflow)</h6>
                                 <div class="table-responsive bg-white rounded shadow-sm border mb-4">
                                     <table class="table table-bordered mb-0 small">
@@ -801,7 +774,6 @@
                                     </table>
                                 </div>
 
-                                <!-- 3. Narasi Kondisi -->
                                 <h6 class="fw-bold text-primary mb-3 mt-4"><i class="bi bi-journal-text me-1"></i> Catatan Kualitatif Survei</h6>
                                 <div class="row g-3">
                                     <div class="col-md-6">
@@ -847,7 +819,6 @@
                             </div>
                         </div>
 
-                        <!-- Histori Survei Lama -->
                         <?php if (count($data_profiling) > 1): ?>
                             <h6 class="fw-bold text-secondary mb-3 mt-4"><i class="bi bi-clock-history"></i> Histori Kunjungan Sebelumnya</h6>
                             <div class="accordion" id="accHistoriProf">
@@ -880,9 +851,6 @@
                     <?php endif; ?>
                 </div>
 
-                <!-- ========================================================= -->
-                <!-- TAB 6: PENGALAMAN ORGANISASI (DSS RELATIONAL VERIFIED) -->
-                <!-- ========================================================= -->
                 <div class="tab-pane fade" id="tab-organisasi" role="tabpanel">
                     <div class="row mb-4 align-items-center">
                         <div class="col-md-7">
@@ -896,7 +864,6 @@
                         </div>
                     </div>
 
-                    <!-- Indikator Gabungan Multiplier DSS -->
                     <div class="card bg-<?= $warna_potensi ?> bg-opacity-10 border-<?= $warna_potensi ?> mb-4 shadow-sm">
                         <div class="card-body py-3 d-flex flex-wrap justify-content-between align-items-center">
                             <div>
@@ -957,9 +924,6 @@
                     </div>
                 </div>
 
-                <!-- ========================================================= -->
-                <!-- TAB 7: PENDIDIKAN / DIKLAT CU (SYARAT MUTLAK DSS) -->
-                <!-- ========================================================= -->
                 <div class="tab-pane fade" id="tab-diklat" role="tabpanel">
                     <div class="row mb-4 align-items-center">
                         <div class="col-md-7">
@@ -973,7 +937,6 @@
                         </div>
                     </div>
 
-                    <!-- Indikator Minimum Requirement DSS -->
                     <div class="card bg-<?= $warna_diklat ?> bg-opacity-10 border-<?= $warna_diklat ?> mb-4 shadow-sm">
                         <div class="card-body py-3 d-flex flex-wrap justify-content-between align-items-center">
                             <div>
@@ -1049,17 +1012,71 @@
                     </div>
                 </div>
 
+                <div class="tab-pane fade" id="tab-dokumen" role="tabpanel">
+                    <div class="d-flex justify-content-between align-items-center mb-4 border-bottom pb-2">
+                        <div>
+                            <h6 class="fw-bold mb-0 text-primary"><i class="bi bi-folder2-open"></i> Arsip Digital & Dokumen Anggota</h6>
+                            <p class="text-muted small mb-0">Manajemen dokumen paperless (KTP, KK, Foto Rumah/Aset, Formulir).</p>
+                        </div>
+                        <button class="btn btn-sm btn-primary shadow-sm" data-bs-toggle="modal" data-bs-target="#modalTambahDokumen">
+                            <i class="bi bi-cloud-upload-fill"></i> Upload Dokumen Baru
+                        </button>
+                    </div>
+
+                    <?php if (!empty($data_dokumen)): ?>
+                        <div class="row g-3">
+                            <?php foreach ($data_dokumen as $doc): ?>
+                                <?php 
+                                    // Menentukan ikon dan warna badge berdasarkan kategori
+                                    $icon_doc = 'bi-file-earmark-text';
+                                    $bg_doc = 'bg-secondary';
+                                    
+                                    if(strpos($doc['kategori_dokumen'], 'KTP') !== false || strpos($doc['kategori_dokumen'], 'Kartu Keluarga') !== false) {
+                                        $icon_doc = 'bi-person-vcard'; $bg_doc = 'bg-primary';
+                                    } elseif(strpos($doc['kategori_dokumen'], 'Foto') !== false) {
+                                        $icon_doc = 'bi-image'; $bg_doc = 'bg-success';
+                                    } elseif(strpos($doc['kategori_dokumen'], 'Formulir') !== false) {
+                                        $icon_doc = 'bi-ui-checks'; $bg_doc = 'bg-warning text-dark';
+                                    }
+                                ?>
+                                <div class="col-md-6 col-lg-4">
+                                    <div class="card shadow-sm border-0 h-100">
+                                        <div class="card-body p-3">
+                                            <div class="d-flex align-items-start mb-2">
+                                                <div class="flex-shrink-0 me-3">
+                                                    <div class="bg-light rounded p-2 text-center" style="width: 50px; height: 50px;">
+                                                        <i class="bi <?= $icon_doc ?> fs-4 text-secondary"></i>
+                                                    </div>
+                                                </div>
+                                                <div class="flex-grow-1 overflow-hidden">
+                                                    <span class="badge <?= $bg_doc ?> mb-1"><?= htmlspecialchars($doc['kategori_dokumen']) ?></span>
+                                                    <h6 class="fw-bold text-truncate mb-0" title="<?= htmlspecialchars($doc['keterangan']) ?>"><?= htmlspecialchars($doc['keterangan'] ?: 'Tanpa Keterangan') ?></h6>
+                                                    <span class="small text-muted"><?= date('d M Y, H:i', strtotime($doc['tgl_upload'])) ?></span>
+                                                </div>
+                                            </div>
+                                            <a href="uploads/dokumen/<?= $doc['nama_file'] ?>" target="_blank" class="btn btn-sm btn-outline-secondary w-100 mt-2">
+                                                <i class="bi bi-eye-fill"></i> Lihat / Unduh
+                                            </a>
+                                        </div>
+                                    </div>
+                                </div>
+                            <?php endforeach; ?>
+                        </div>
+                    <?php else: ?>
+                        <div class="alert alert-light border shadow-sm py-5 text-center">
+                            <i class="bi bi-box-seam fs-1 d-block mb-3 text-secondary opacity-50"></i>
+                            <h5 class="fw-bold">Belum Ada Dokumen</h5>
+                            <p class="mb-0 text-muted small">Tidak ada berkas fisik yang didigitalkan untuk anggota ini. Silakan upload KTP, KK, atau foto pendukung lainnya.</p>
+                        </div>
+                    <?php endif; ?>
+                </div>
+
             </div>
         </div>
     </div>
     <?php endif; ?>
 </main>
 
-<!-- ========================================== -->
-<!-- SEMUA MODAL TERPUSAT DI BAWAH INI          -->
-<!-- ========================================== -->
-
-<!-- Modal Tambah Keluarga -->
 <div class="modal fade" id="modalTambahKeluarga" tabindex="-1" aria-hidden="true">
     <div class="modal-dialog modal-lg modal-dialog-centered">
         <div class="modal-content">
@@ -1134,7 +1151,6 @@
     </div>
 </div>
 
-<!-- Modal Tambah Organisasi (DSS MASTER RELATIONAL) -->
 <div class="modal fade" id="modalTambahOrganisasi" tabindex="-1" aria-hidden="true">
     <div class="modal-dialog modal-dialog-centered">
         <div class="modal-content">
@@ -1205,7 +1221,6 @@
     </div>
 </div>
 
-<!-- Modal Tambah Diklat CU -->
 <div class="modal fade" id="modalTambahDiklat" tabindex="-1" aria-hidden="true">
     <div class="modal-dialog modal-dialog-centered">
         <div class="modal-content">
@@ -1258,7 +1273,6 @@
     </div>
 </div>
 
-<!-- Modal Tambah Profiling & Kunjungan (TAB 5) -->
 <div class="modal fade" id="modalTambahProfiling" tabindex="-1" aria-hidden="true">
     <div class="modal-dialog modal-xl modal-dialog-centered">
         <div class="modal-content border-0 shadow-lg">
@@ -1270,7 +1284,6 @@
                 <input type="hidden" name="action" value="tambah_profiling">
                 
                 <div class="modal-body p-0 bg-light">
-                    <!-- Navigasi Internal Modal -->
                     <ul class="nav nav-tabs nav-fill bg-white border-bottom pt-2 px-2" id="surveiTabs" role="tablist">
                         <li class="nav-item"><button class="nav-link active fw-bold" data-bs-toggle="tab" data-bs-target="#sm-umum" type="button"><i class="bi bi-info-square me-1"></i> 1. Info & Kondisi</button></li>
                         <li class="nav-item"><button class="nav-link fw-bold text-success" data-bs-toggle="tab" data-bs-target="#sm-neraca" type="button"><i class="bi bi-bank2 me-1"></i> 2. APBK / Neraca</button></li>
@@ -1279,8 +1292,6 @@
                     </ul>
 
                     <div class="tab-content p-4">
-                        
-                        <!-- TAB 1: Info Umum & Kondisi Fisik -->
                         <div class="tab-pane fade show active" id="sm-umum">
                             <div class="row g-3 mb-4">
                                 <div class="col-md-6">
@@ -1306,7 +1317,6 @@
                             </div>
                         </div>
 
-                        <!-- TAB 2: Neraca / APBK -->
                         <div class="tab-pane fade" id="sm-neraca">
                             <div class="alert alert-success border-success bg-success bg-opacity-10 py-2 small mb-3">
                                 <i class="bi bi-info-circle-fill me-1"></i> Masukkan estimasi nilai wajar dari harta dan hutang riil anggota di luar sistem CU.
@@ -1337,13 +1347,11 @@
                             </div>
                         </div>
 
-                        <!-- TAB 3: Arus Kas / Cashflow Bulanan -->
                         <div class="tab-pane fade" id="sm-cashflow">
                             <div class="alert alert-primary border-primary bg-primary bg-opacity-10 py-2 small mb-3">
                                 <i class="bi bi-info-circle-fill me-1"></i> Pemisahan antara pendapatan/biaya rumah tangga dengan omzet/biaya operasional usaha.
                             </div>
                             <div class="row g-4">
-                                <!-- Keluarga -->
                                 <div class="col-md-6">
                                     <div class="p-3 border rounded">
                                         <h6 class="fw-bold text-dark border-bottom pb-2"><i class="bi bi-house-door me-1"></i> Dompet Keluarga (Bulanan)</h6>
@@ -1357,7 +1365,6 @@
                                         </div>
                                     </div>
                                 </div>
-                                <!-- Usaha -->
                                 <div class="col-md-6">
                                     <div class="p-3 border rounded">
                                         <h6 class="fw-bold text-dark border-bottom pb-2"><i class="bi bi-shop me-1"></i> Dompet Usaha (Rata-rata Bulanan)</h6>
@@ -1374,7 +1381,6 @@
                             </div>
                         </div>
 
-                        <!-- TAB 4: Sosial, Harapan & Kesimpulan -->
                         <div class="tab-pane fade" id="sm-sosial">
                             <div class="row g-3">
                                 <div class="col-md-6">
@@ -1426,9 +1432,49 @@
     </div>
 </div>
 
+<div class="modal fade" id="modalTambahDokumen" tabindex="-1" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-centered">
+        <div class="modal-content">
+            <div class="modal-header bg-primary text-white">
+                <h5 class="modal-title"><i class="bi bi-cloud-upload-fill me-2"></i> Upload Arsip Digital</h5>
+                <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
+            </div>
+            <form action="profil.php?no_ba=<?= urlencode($no_ba) ?>" method="POST" enctype="multipart/form-data">
+                <input type="hidden" name="action" value="tambah_dokumen">
+                <div class="modal-body bg-light">
+                    <div class="mb-3">
+                        <label class="form-label fw-bold">Kategori File Dokumen <span class="text-danger">*</span></label>
+                        <select class="form-select" name="kategori_dokumen" required>
+                            <option value="" selected disabled>Pilih jenis arsip...</option>
+                            <option value="KTP">Scan / Foto KTP</option>
+                            <option value="Kartu Keluarga">Scan / Foto Kartu Keluarga (KK)</option>
+                            <option value="Foto Rumah/Aset">Foto Rumah & Aset Fisik</option>
+                            <option value="Foto Usaha">Foto Tempat Usaha / Lahan Pertanian</option>
+                            <option value="Formulir Fisik">Scan Formulir Fisik CU</option>
+                            <option value="Lainnya">Dokumen Pendukung Lainnya</option>
+                        </select>
+                    </div>
+                    <div class="mb-3">
+                        <label class="form-label fw-bold">Pilih File (PDF, JPG, PNG) <span class="text-danger">*</span></label>
+                        <input type="file" class="form-control" name="file_dokumen" accept=".pdf,.png,.jpg,.jpeg" required>
+                        <small class="text-muted d-block mt-1">Pastikan gambar jelas dan teks dapat dibaca.</small>
+                    </div>
+                    <div class="mb-2">
+                        <label class="form-label fw-bold">Keterangan Singkat</label>
+                        <textarea class="form-control" name="keterangan" rows="2" placeholder="Contoh: Foto kondisi rumah tampak depan hasil survei lapangan 2026..."></textarea>
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Batal</button>
+                    <button type="submit" class="btn btn-primary"><i class="bi bi-cloud-arrow-up-fill"></i> Upload File</button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+
 <?php require_once '../app/Views/Layouts/footer.php'; ?>
 
-<!-- SCRIPT KHUSUS -->
 <script>
 document.addEventListener('DOMContentLoaded', function() {
     // Script Filter Portofolio Keuangan
