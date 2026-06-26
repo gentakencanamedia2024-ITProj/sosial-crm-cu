@@ -1,5 +1,5 @@
 <?php
-// public/profil.php - Logika Detail Anggota & DMS
+// public/profil.php - Logika Detail Anggota, DMS, & Executive Summary Rapor
 session_start();
 
 require_once '../config/database.php';
@@ -199,15 +199,12 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['action'])) {
             $file_orig = $_FILES['file_dokumen']['name'];
             $ext = pathinfo($file_orig, PATHINFO_EXTENSION);
             
-            // Ekstensi yang diizinkan untuk arsip digital
             $allowed_ext = ['pdf', 'jpg', 'jpeg', 'png'];
             if (in_array(strtolower($ext), $allowed_ext)) {
                 $nama_file_doc = "doc_" . $no_ba . "_" . time() . "." . $ext;
                 $target_path = "../public/uploads/dokumen/" . $nama_file_doc;
                 
-                if (!is_dir("../public/uploads/dokumen/")) { 
-                    mkdir("../public/uploads/dokumen/", 0777, true); 
-                }
+                if (!is_dir("../public/uploads/dokumen/")) { mkdir("../public/uploads/dokumen/", 0777, true); }
                 
                 if (move_uploaded_file($file_tmp, $target_path)) {
                     try {
@@ -353,6 +350,7 @@ try {
 $pure_simpanan_harian = [];
 $sh_berjangka_display = [];
 $trx_simpanan_harian = [];
+$all_sh = [];
 
 try {
     $stmt_sh = $pdo_core->prepare("
@@ -601,6 +599,107 @@ try {
     $stmt_doc_get->execute([$no_ba]);
     $data_dokumen = $stmt_doc_get->fetchAll(PDO::FETCH_ASSOC);
 } catch (PDOException $e) {}
+
+// ==============================================================================
+// 12. ANALISIS KEUANGAN & RAPOR ANGGOTA (POIN 2 & 7)
+// ==============================================================================
+$rapor = [
+    'total_aset_core' => 0,
+    'total_hutang_core' => 0,
+    'total_aset_lokal' => 0,
+    'total_hutang_lokal' => 0,
+    'grand_total_aset' => 0,
+    'grand_total_hutang' => 0,
+    'der' => 0,
+    'der_status' => '',
+    'der_color' => '',
+    'surplus_defisit' => 0,
+    'rpc_status' => '',
+    'rpc_color' => '',
+    'badges' => []
+];
+
+// A. Hitung Aset & Hutang dari Core System
+$rapor['total_aset_core'] += ((float)$data_core['AA_Saldo_SP'] + (float)$data_core['AA_Saldo_SW'] + (float)$data_core['AA_Saldo_SS']);
+foreach($all_sh as $sh) { $rapor['total_aset_core'] += (float)$sh['Saldo_Simpanan']; }
+foreach($data_simpanan_berjangka as $sb) { $rapor['total_aset_core'] += (float)$sb['Jml_Simpanan']; }
+
+foreach($data_pinjaman as $pj) {
+    if($pj['Status_Pinjaman'] == '0') { // 0 = aktif/belum lunas
+        $rapor['total_hutang_core'] += (float)$pj['Saldo_Pinjaman'];
+    }
+}
+
+// B. Hitung Aset, Hutang, & Kapasitas Bayar dari Data Survei (Lokal)
+if (!empty($data_profiling)) {
+    $prof_latest = $data_profiling[0];
+    
+    // Aset & Hutang Luar
+    $rapor['total_aset_lokal'] = (float)$prof_latest['aset_keluarga'] + (float)$prof_latest['aset_usaha'];
+    $rapor['total_hutang_lokal'] = (float)$prof_latest['hutang_keluarga'] + (float)$prof_latest['hutang_usaha'];
+    
+    // Kapasitas Bayar (RPC)
+    $pemasukan = (float)$prof_latest['kas_keluarga_masuk'] + (float)$prof_latest['kas_usaha_masuk'];
+    $pengeluaran = (float)$prof_latest['kas_keluarga_keluar'] + (float)$prof_latest['kas_usaha_keluar'];
+    $rapor['surplus_defisit'] = $pemasukan - $pengeluaran;
+    
+    if ($pemasukan > 0) {
+        $rasio_surplus = ($rapor['surplus_defisit'] / $pemasukan) * 100;
+        if ($rasio_surplus >= 20) {
+            $rapor['rpc_status'] = 'Sangat Sehat (Surplus Kapasitas Baik)';
+            $rapor['rpc_color'] = 'success';
+        } elseif ($rasio_surplus > 0) {
+            $rapor['rpc_status'] = 'Cukup (Surplus Tipis)';
+            $rapor['rpc_color'] = 'primary';
+        } else {
+            $rapor['rpc_status'] = 'Defisit (Risiko Gagal Bayar)';
+            $rapor['rpc_color'] = 'danger';
+        }
+    } else {
+        $rapor['rpc_status'] = 'Tidak Teridentifikasi Pemasukan';
+        $rapor['rpc_color'] = 'danger';
+    }
+} else {
+    $rapor['rpc_status'] = 'Belum Ada Data Survei Lapangan';
+    $rapor['rpc_color'] = 'secondary';
+}
+
+// C. Konsolidasi Final Rasio DER (Debt to Equity Ratio)
+$rapor['grand_total_aset'] = $rapor['total_aset_core'] + $rapor['total_aset_lokal'];
+$rapor['grand_total_hutang'] = $rapor['total_hutang_core'] + $rapor['total_hutang_lokal'];
+
+if ($rapor['grand_total_aset'] > 0) {
+    $rapor['der'] = ($rapor['grand_total_hutang'] / $rapor['grand_total_aset']) * 100;
+} else {
+    $rapor['der'] = $rapor['grand_total_hutang'] > 0 ? 100 : 0;
+}
+
+if ($rapor['der'] < 50) {
+    $rapor['der_status'] = 'Sehat (Risiko Rendah)';
+    $rapor['der_color'] = 'success';
+} elseif ($rapor['der'] <= 80) {
+    $rapor['der_status'] = 'Waspada (Risiko Menengah)';
+    $rapor['der_color'] = 'warning';
+} else {
+    $rapor['der_status'] = 'Berisiko Tinggi (Overleverage)';
+    $rapor['der_color'] = 'danger';
+}
+
+// D. Algoritma Rekomendasi / Badges (Rapor Anggota)
+if (!empty($data_profiling)) {
+    if ($rapor['der'] < 50 && $rapor['surplus_defisit'] > 0) {
+        $rapor['badges'][] = ['bg' => 'success', 'icon' => 'bi-star-fill', 'text' => 'Karakter & Kapasitas Baik'];
+        $rapor['badges'][] = ['bg' => 'primary', 'icon' => 'bi-graph-up-arrow', 'text' => 'Potensi Peningkatan Pinjaman'];
+    }
+    if ($rapor['der'] > 80 || $rapor['surplus_defisit'] < 0) {
+        $rapor['badges'][] = ['bg' => 'danger', 'icon' => 'bi-exclamation-triangle-fill', 'text' => 'Butuh Penataan Keuangan (Restrukturisasi)'];
+    }
+    if ($rapor['grand_total_hutang'] == 0 && $rapor['grand_total_aset'] > 0) {
+        $rapor['badges'][] = ['bg' => 'info text-dark', 'icon' => 'bi-award-fill', 'text' => 'Tidak Memiliki Tanggungan Hutang'];
+    }
+} else {
+    $rapor['badges'][] = ['bg' => 'secondary', 'icon' => 'bi-question-circle', 'text' => 'Data Survei Belum Lengkap'];
+}
 
 // Konfigurasi Halaman
 $page_title = "Profil " . htmlspecialchars($data_core['Nama']);
